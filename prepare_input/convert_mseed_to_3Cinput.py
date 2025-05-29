@@ -26,18 +26,18 @@ plt.rc('font',**font)
 import os
 
 
-indir = '' #path to mseed data 
-outdir = '' #path where 3C waveform data should be stored
-data_network_code = '8J'
-data_year = '2016'
-data_day = '20161220'           # YYYYMMDD, day to analyse
+indir = '/media/chopp/Data1/chet-ingeneous/Gabbs_MSEED/2023.359' #path to mseed data 
+outdir = '/media/chopp/Data1/chet-ingeneous/b3am_output/' #path where 3C waveform data should be stored
+data_network_code = ''
+data_year = '2023'
+data_day = '20231225'           # YYYYMMDD, day to analyse
 data_start_time = '00:00:00.000'        # HH:MM:SS.sss
 data_end_time = '01:59:59.999'  # HH:MM:SS.sss
 freq_min = 0.01 # for bandpass filtering
-freq_max = 49 # Nyquist Frequency
-sampling_rate = 100
+freq_max = 100 # Nyquist Frequency
+sampling_rate = 200
 
-path_to_stationfile = outdir+'station_list_xy.txt'
+path_to_stationfile = outdir+'Gabbs_Inventory_local_grid.csv' #path to stationfile (station coordinates in cartesian coordinates in m)
 
 def julian_day(date):
     """
@@ -78,12 +78,12 @@ for sta in range(nstations):
 	if not os.path.exists(outdir+'PICS_preproc'):
 		os.mkdir(outdir+'PICS_preproc')
 	fig,axs = plt.subplots(3,1,figsize=(20,15))	
-	full_path = indir +data_network_code+'_' +str(station[sta])+'*'# Path for data
+	full_path = f"{indir}/*.{station[sta]}.*"
 	print(full_path)
 	try:
 		st1 = obspy.read(full_path,fmt='MSEED',starttime=starttime,endtime=endtime)
 	except:
-		st1 = []
+		continue
 	for comp in range(3): # loop over all three components
 		st = st1.select(channel='*'+comp_order[comp])
 		print(st)
@@ -93,29 +93,29 @@ for sta in range(nstations):
 			st.detrend('demean')
 			st.filter('bandpass',freqmin= freq_min, freqmax = freq_max, zerophase=True)
 
-			#remove instrument response
-			response = nrl.get_response( sensor_keys=['Magseis Fairfield','Generation 2','5 Hz'],datalogger_keys = ['Magseis Fairfield','Zland 1C or 3C','0 dB (1)','250','Linear Phase','Off']) #datalogger keys are unknown
+			# #remove instrument response
+			# response = nrl.get_response( sensor_keys=['Magseis Fairfield','Generation 2','5 Hz'],datalogger_keys = ['Magseis Fairfield','Zland 1C or 3C','0 dB (1)','250','Linear Phase','Off']) #datalogger keys are unknown
 			
-			response_dict = response.get_paz().__dict__
-			paz_dict = {"gain": response_dict["normalization_factor"],
-				"poles": response_dict['_poles'],
-				"sensitivity": response.instrument_sensitivity.value ,
-				"zeros": response_dict['_zeros']}
-			st.simulate(paz_remove=paz_dict)
-			st.detrend('linear')
-			st.detrend('demean')
-			st.filter('bandpass',freqmin= freq_min, freqmax = freq_max, zerophase=True)
+			# response_dict = response.get_paz().__dict__
+			# paz_dict = {"gain": response_dict["normalization_factor"],
+			# 	"poles": response_dict['_poles'],
+			# 	"sensitivity": response.instrument_sensitivity.value ,
+			# 	"zeros": response_dict['_zeros']}
+			# st.simulate(paz_remove=paz_dict)
+			# st.detrend('linear')
+			# st.detrend('demean')
+			# st.filter('bandpass',freqmin= freq_min, freqmax = freq_max, zerophase=True)
 			st.merge(fill_value=0) #if multiple traces in mseed, this concatenates it to one file per day
 			st.trim(starttime=starttime,endtime=endtime,pad=True,fill_value=0)
 			st.taper(0.1)
 			data_seis[comp,sta,:st[0].data.size] = st[0].data
 		axs[comp].plot(data_seis[comp,sta,:],'k',lw=2)
 	plt.tight_layout()
-	fig.savefig(outdir+'PICS_preproc/'+'stations_'+str(station[sta])+'_'+str(data_day)+'_'+str(data_start_time)+'_'+str(data_end_time)+'.png')
+	fig.savefig(outdir+'PICS_preproc/'+'stations_'+str(station[sta])+'_'+str(data_day)+'.png')
 	plt.close(fig)
 	del st
 print(np.max(np.max(data_seis,axis=0),axis=1))
 #########################
 ### save data as .npy ###
 #########################
-np.save(outdir+'3C_waveform_data_'+str(data_day)+'_'+str(data_start_time)+'_'+str(data_end_time)+'.npy',data_seis,allow_pickle=True)
+np.save(outdir+'3C_waveform_data_'+str(data_day)+'.npy',data_seis,allow_pickle=True)

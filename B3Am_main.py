@@ -162,8 +162,8 @@ else:
 if params.want_parallel:
 	f_pool = np.copy(params.f)
 	def worker(f_pool):
-    		results = cbp.calculate_results(DFTES,DFTNS,DFTZS,params,f_pool,ka)
-    		return results
+		results = cbp.calculate_results(DFTES,DFTNS,DFTZS,params,f_pool,ka)
+		return results
 	pool = Pool(processes = len(f_pool))
 	results = pool.map(worker, f_pool)    
 	pool.close()

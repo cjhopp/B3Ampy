@@ -10,8 +10,8 @@ import os
 ###############
 ### General ###
 ###############
-indir = '/media/chopp/Data1/chet-ingeneous/b3am_output/'				# path to 3C waveform data in .npy format 
-indata = '3C_waveform_data_20231225.npy'		# filename where 3C waveform data are stored (as .npy)
+indir = './test_data/'				# path to 3C waveform data in .npy format 
+indata = '3C_waveform_data_syn.npy'		# filename where 3C waveform data are stored (as .npy)
 sampling_rate = 200				# Hz, sampling rate of data
 
 stationfile = indir+'Gabbs_Inventory_local_grid.csv' 	# path and filename to stationfile (station coordinates in cartesian coordinates in m)
@@ -48,9 +48,9 @@ tw_factor = 4 # should be at least 4
 ### FK calculation ###
 ######################
 k_res = 201 					# number of points for wavenumber grid
-custom_klimits = False				# False: use wavenumber limits calculated from station spacing, True: use wavenumber limits defined here (e.g. using array_response_function.py)
+custom_klimits = True				# False: use wavenumber limits calculated from station spacing, True: use wavenumber limits defined here (e.g. using array_response_function.py)
 kmin = 0.00006					# m
-kmax = 0.05					# m
+kmax = 0.1					# m
 custom_azi_res = False				# False: use default resolution of 5° for backazimuth, True: use backazimuth resolution from next line
 azi_res = 5					# degree
 custom_dip_res = False				# False: use default resolution of 5° for dip, True: use dip resolution from next line
